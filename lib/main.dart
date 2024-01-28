@@ -232,25 +232,10 @@ class _PolygonDemoState extends State<PolygonDemo> {
     super.initState();
 
     final rand = Random.secure();
-    _points = List.generate(50, (_) => randomPoint(rand));
-    //print(points);
-    /*
-    points = [
-      Float64x2(0.2, 0.2),
-      Float64x2(0.5, 0.3),
-      Float64x2(0.8, 0.2),
-      Float64x2(0.8, 0.8),
-      Float64x2(0.2, 0.8),
-      //Float64x2(0.513396, 0.421374),
-      //Float64x2(0.568435, 0.758811),
-      //Float64x2(0.672380, 0.238586),
-      //Float64x2(0.862443, 0.259741),
-      //Float64x2(0.452481, 0.441821),
-    ];
-    */
-    final convex = convexHull(_points);
+    _points = List.generate(25, (_) => randomPoint(rand));
+    final convex = fastConvexHull(_points);
     _convexPolygon = convex..add(convex[0]);
-    _concavePolygon = concaveman(points: _points, concavity: 1.5, lengthThreshold: 0.1);
+    _concavePolygon = concaveman(points: _points, concavity: 1.5);
   }
 
   @override
@@ -337,6 +322,14 @@ class PointsPainter extends CustomPainter {
       final offset = Offset(points[i].x*size.width, points[i].y*size.height);
       final paint = Paint()..color = colors != null ? colors![i] : color!;
       canvas.drawCircle(offset, 2.5, paint);
+
+      //final builder = ParagraphBuilder(ParagraphStyle(
+      //  textAlign: TextAlign.left,
+      //  fontSize: 10,
+      //))
+      //  ..addText('(${points[i].x}, ${points[i].y})');
+      //final para = builder.build()..layout(const ParagraphConstraints(width: 150));
+      //canvas.drawParagraph(para, offset);
     }
   }
   

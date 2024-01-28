@@ -37,7 +37,6 @@ double orient2dAdapt(
   double cx, double cy,
   double detsum
 ) {
-  print('adapt');
   final acx = ax - cx;
   final bcx = bx - cx;
   final acy = ay - cy;
@@ -154,11 +153,11 @@ int sum(int elen, List<double> e, int flen, List<double> f, List<double> h) {
   double Q;
   double Qnew;
   double hh;
-
   double enow = e[0];
   double fnow = f[0];
   int eindex = 0;
   int findex = 0;
+
   if ((fnow > enow) == (fnow > -enow)) {
     Q = enow;
     enow = e[++eindex];
@@ -166,6 +165,7 @@ int sum(int elen, List<double> e, int flen, List<double> f, List<double> h) {
     Q = fnow;
     fnow = f[++findex];
   }
+
   int hindex = 0;
   if (eindex < elen && findex < flen) {
     if ((fnow > enow) == (fnow > -enow)) {
@@ -182,10 +182,10 @@ int sum(int elen, List<double> e, int flen, List<double> f, List<double> h) {
     while (eindex < elen && findex < flen) {
       if ((fnow > enow) == (fnow > -enow)) {
         (Qnew, hh) = twoSum(Q, enow);
-        enow = e[++eindex];
+        if (++eindex < elen) enow = e[eindex];
       } else {
         (Qnew, hh) = twoSum(Q, fnow);
-        fnow = f[++findex];
+        if (++findex < flen) fnow = f[findex];
       }
       Q = Qnew;
       if (hh != 0) {
@@ -193,22 +193,25 @@ int sum(int elen, List<double> e, int flen, List<double> f, List<double> h) {
       }
     }
   }
+
   while (eindex < elen) {
     (Qnew, hh) = twoSum(Q, enow);
-    enow = e[++eindex];
+    if (++eindex < elen) enow = e[eindex];
     Q = Qnew;
     if (hh != 0) {
       h[hindex++] = hh;
     }
   }
+
   while (findex < flen) {
     (Qnew, hh) = twoSum(Q, fnow);
-    fnow = f[++findex];
+    if (++findex < flen) fnow = f[findex];
     Q = Qnew;
     if (hh != 0) {
       h[hindex++] = hh;
     }
   }
+
   if (Q != 0 || hindex == 0) {
     h[hindex++] = Q;
   }

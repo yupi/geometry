@@ -1,4 +1,4 @@
-// Ported to dart with modifications by Yuri Pimenov 2023
+// Ported to Dart with modifications by Yuri Pimenov 2023
 // https://web.archive.org/web/20130126163405/http://geomalgorithms.com/a03-_inclusion.html
 
 // Copyright 2000 softSurfer, 2012 Dan Sunday
@@ -23,7 +23,7 @@ int pointInPolygon(Float64x2 p, List<Float64x2> vs) {
   for (int i = 0; i < vs.length - 1; i++) {
     final p0 = vs[i];
     final p1 = vs[i+1];
-    final orient = orient2dFast(p0, p1, p);
+    final orient = orient2d(p0, p1, p);
     if (orient == 0) return 0;
 
     if (p0.y <= p.y) {

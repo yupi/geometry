@@ -1,5 +1,6 @@
 // ignore_for_file: curly_braces_in_flow_control_structures
 
+import 'dart:collection';
 import 'dart:math' as math;
 import 'dart:typed_data';
 
@@ -34,8 +35,7 @@ List<Float64x2> concaveman({
   double lengthThreshold = 0,
 }) {
   // start with a convex hull of the points
-  //final hull = fastConvexHull(points);
-  final hull = convexHull(points);
+  final hull = fastConvexHull(points);
 
   // index the points with an R-tree
   final tree = RBushBase<Float64x2>(
@@ -45,7 +45,6 @@ List<Float64x2> concaveman({
     getMinY: (p) => p.y,
   );
   tree.load(points);
-  //print(tree.all());
 
   // turn the convex hull into a linked list and populate the initial edge queue with the nodes
   Node? last;
@@ -85,14 +84,8 @@ List<Float64x2> concaveman({
     final p0 = node.prev.point;
     final p1 = node.next.next.point;
     final p = findCandidate(p0, a, b, p1, maxSqLen, tree, segTree);
-    print('candidate: $p');
-
-    //if (p != null) {
-    //  print(math.min(sqDist(p, a), sqDist(p, b)));
-    //}
 
     if (p != null && math.min(sqDist(p, a), sqDist(p, b)) <= maxSqLen) {
-      print('accepted');
       // connect the edge endpoints through this point and add 2 new edges to the queue
       queue.add(node);
       queue.add(insertNode(p, node));
@@ -136,41 +129,24 @@ Float64x2? findCandidate(
   RBushBase<Float64x2> tree,
   RBushBase<Node> segTree,
 ) {
-  print('findCandidate()');
-  print('a: $a');
-  print('b: $b');
-  print('c: $c');
-  print('d: $d');
-  print('maxDist: $maxDist');
   final points = tree.knn2(
     1,
     distance: (p, bbox) {
-      print('distance');
-      print('p: $p');
       final dist = p != null ? sqSegPointDist(p, b, c) : sqSegBoxDist(b, c, bbox);
-      print('p dist: $dist');
       return dist <= maxDist ? dist : null;
     },
     predicate: (p, dist) {
-      print('predicate');
-      print('p: $p');
-      print('p dist: $dist');
       final d0 = sqSegPointDist(p, a, b);
       final d1 = sqSegPointDist(p, c, d);
-      print('d0: $d0');
-      print('d1: $d1');
-      print(noIntersections(b, p, segTree));
-      print(noIntersections(c, p, segTree));
-      return dist < d0 && dist < d1;
-      //return dist < d0 && dist < d1 &&
-      //  noIntersections(b, p, segTree) && noIntersections(c, p, segTree);
+      return dist < d0 && dist < d1 &&
+        noIntersections(b, p, segTree) && noIntersections(c, p, segTree);
     },
   );
 
-  return points.isNotEmpty ? points[0] : null;
+  return points.firstOrNull;
 }
 
-fastConvexHull(List<Float64x2> points) {
+List<Float64x2> fastConvexHull(List<Float64x2> points) {
   Float64x2 left = points[0];
   Float64x2 top = points[0];
   Float64x2 right = points[0];
@@ -185,11 +161,19 @@ fastConvexHull(List<Float64x2> points) {
     if (p.y > bottom.y) bottom = p;
   }
 
-  // filter out points that are inside the resulting quadrilateral
-  final cull = [left, top, right, bottom];
-  var filtered = [...cull];
-  for (int i = 0; i < points.length; i++) {
-    if (pointInPolygon(points[i], cull) > 0) filtered.add(points[i]);
+  final cullSet = HashSet<Float64x2>(
+    equals: (a, b) => a.equal(b),
+    hashCode: (f) => Object.hashAll([f.x, f.y]),
+  )..addAll([left, top, right, bottom]);
+  if (cullSet.length < 4) {
+    return convexHull(points);
+  }
+
+  final cull = cullSet.toList();
+  final filtered = [...cull];
+  cull.add(cull[0]);
+  for (final p in points) {
+    if (pointInPolygon(p, cull) > 0) filtered.add(p);
   }
 
   // get convex hull around the filtered points
@@ -241,12 +225,8 @@ bool noIntersections(Float64x2 a, Float64x2 b, RBushBase<Node> segTree) {
     maxX: math.max(a.x, b.x),
     maxY: math.max(a.y, b.y),
   );
-  print(bbox);
 
-  final edges = segTree.search(bbox);
-  print('edges: $edges');
-  for (int i = 0; i < edges.length; i++) {
-    final node = edges[i];
+  for (final node in segTree.search(bbox)) {
     if (intersects(node.point, node.next.point, a, b)) return false;
   }
   return true;
@@ -258,7 +238,7 @@ double cross(Float64x2 p1, Float64x2 p2, Float64x2 p3) {
 
 // check if the edges (p1,q1) and (p2,q2) intersect
 bool intersects(Float64x2 p1, Float64x2 q1, Float64x2 p2, Float64x2 q2) {
-  return p1 != q2 && q1 != p2 &&
+  return !p1.equal(q2) && !q1.equal(p2) &&
     cross(p1, q1, p2) > 0 != cross(p1, q1, q2) > 0 &&
     cross(p2, q2, p1) > 0 != cross(p2, q2, q1) > 0;
 }
@@ -385,4 +365,8 @@ extension RBushBoxExt on RBushBox {
   Float64x2 get topRight => Float64x2(maxX, minY);
   Float64x2 get bottomLeft => Float64x2(minX, maxY);
   Float64x2 get bottomRight => Float64x2(maxX, maxY);
+}
+
+extension Float64x2Equal on Float64x2 {
+  bool equal(dynamic other) => other is Float64x2 && x == other.x && y == other.y;
 }

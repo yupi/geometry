@@ -8,28 +8,27 @@ import 'package:test/test.dart';
 import 'package:geometry_demo/orient.dart';
 
 void main() {
-  group('Orientation', () {
-    test('Basic', () {
-      //expect(orient2d(Float64x2(0, 0), Float64x2(1, 1), Float64x2(0, 1)), lessThan(0));
-      //expect(orient2d(Float64x2(0, 0), Float64x2(0, 1), Float64x2(1, 1)), greaterThan(0));
-      //expect(orient2d(Float64x2(0, 0), Float64x2(0.5, 0.5), Float64x2(1, 1)), equals(0));
+  test('Basic', () {
+    expect(orient2d(Float64x2(0,0), Float64x2(1,1), Float64x2(0,1)), lessThan(0));
+    expect(orient2d(Float64x2(0,0), Float64x2(0,1), Float64x2(1,1)), greaterThan(0));
+    expect(orient2d(Float64x2(0,0), Float64x2(0.5,0.5), Float64x2(1,1)), equals(0));
 
-      const r = 0.95;
-      const q = 18.0;
-      const p = 16.8;
-      final w = math.pow(2, -43);
+    const r = 0.95;
+    const q = 18.0;
+    const p = 16.8;
+    final w = math.pow(2, -43);
 
-      for (int i = 0; i < 1; i++) {
-        for (int j = 0; j < 10; j++) {
-          final x = r + w * i / 128.0;
-          final y = r + w * j / 128.0;
-          final p0 = Float64x2(x, y);
-          final p1 = Float64x2(q, q);
-          final p2 = Float64x2(p, p);
-          orient2d(p0, p1, p2);
-        }
+    for (int i = 0; i < 1; i++) {
+      for (int j = 0; j < 10; j++) {
+        final x = r + w * i / 128.0;
+        final y = r + w * j / 128.0;
+        final p0 = Float64x2(x, y);
+        final p1 = Float64x2(q, q);
+        final p2 = Float64x2(p, p);
+        orient2d(p0, p1, p2);
       }
-    });
+    }
+  });
 
     test('Fixture', () async {
       final fixture = File('test/fixtures/orient2d.txt')
@@ -46,5 +45,4 @@ void main() {
         expect(orient2d(a, b, c), equals(-sign));
       }
     });
-  });
 }
