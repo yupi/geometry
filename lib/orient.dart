@@ -80,12 +80,12 @@ double orient2dAdapt(
 const splitter = 134217729;
 
 (double, double) fastTwoSum(a, b) {
-	final x = a + b;
-	final bv = x - a;
-	final av = x - bv;
-	final br = b - bv;
-	final ar = a - av;
-	return (x, ar + br);
+  final x = a + b;
+  final bv = x - a;
+  final av = x - bv;
+  final br = b - bv;
+  final ar = a - av;
+  return (x, ar + br);
 }
 
 (double, double) twoSum(a, b) {
