@@ -1,7 +1,8 @@
-# geometry_demo
+# geometry
 
 Just for fun project to play with geometry algorithms.
-Mostly ports of wonderful JavaScript packages by Volodymyr Agafonkin @mourner.
+
+Mostly ports of wonderful JavaScript packages by Volodymyr Agafonkin https://github.com/mourner.
 
 Right now i've implemented these:
 * Orienation
